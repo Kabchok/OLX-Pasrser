@@ -60,7 +60,7 @@ print(unique_data)
 
 # Подключаемся к БД (создаст файл, если нет)
 # Подключаемся к БД (создаст файл, если нет)
-conn = sqlite3.connect("flats.db")
+conn = sqlite3.connect("data/flats.db")
 cursor = conn.cursor()
 
 # Создаём таблицу
@@ -106,11 +106,7 @@ if should_write:
 
 
 # Заходим в БД чтобы отобразить разные данные что нам нужны
-conn.commit()
-conn.close()
 
-conn = sqlite3.connect("flats.db")
-cursor = conn.cursor()
 
 cursor.execute("SELECT price, area FROM flats")
 rows = cursor.fetchall()
@@ -136,7 +132,39 @@ print("Средняя стоимость квартир от 30 до 35м: ", sr
 price_1m = round(sum(prices) / sum(areas))
 print("Средняя цена за 1 м²:", price_1m)
 
+conn.commit()
+conn.close()
+conn2 = sqlite3.connect("data/pokazateli.db")
+cursor2 = conn2.cursor()
 
+# Создаём таблицу
+cursor2.execute("""
+               CREATE TABLE IF NOT EXISTS pokazateli
+               (
+                   id
+                       INTEGER
+                       PRIMARY
+                           KEY
+                       AUTOINCREMENT,
+                   avg_price
+                       INTEGER,
+                   avg_area
+                       INTEGER,
+                   avg_price_per_m2
+                       INTEGER,
+                   avg_30_35
+                       INTEGER,
+                   date
+                       TEXT
+                   
+               )
+               """)
+cursor2.execute("""
+               INSERT INTO pokazateli (avg_price, avg_area, avg_price_per_m2, avg_30_35, date)
+               VALUES (?, ?, ?, ?, ?)
+               """, (average_price, average_area, price_1m, sr_price_30_35, now))
 
 # soup = BeautifulSoup(cod, 'html.parser')
 # cards = soup.find_all("div", {'data-cy': 'l-card'})
+conn2.commit()
+conn2.close()
