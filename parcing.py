@@ -1,7 +1,5 @@
 from time import process_time
-
 from playwright.sync_api import sync_playwright
-from bs4 import BeautifulSoup
 import json, time, random, sqlite3
 from datetime import datetime
 
@@ -9,16 +7,11 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=False)
     page = browser.new_page()
     page.goto(
-        "https://www.olx.ua/uk/nedvizhimost/kvartiry/prodazha-kvartir/kropivnitskiy/?currency=USD&search%5Bfilter_enum_number_of_rooms_string%5D%5B0%5D=odnokomnatnye&search%5Border%5D=created_at%3Adesc", timeout=60000)
+        "https://www.olx.ua/uk/nedvizhimost/kvartiry/prodazha-kvartir/kropivnitskiy/?currency=USD&search%5Bfilter_enum_number_of_rooms_string%5D%5B0%5D=odnokomnatnye&search%5Bfilter_float_price%3Afrom%5D=15000&search%5Bfilter_float_price%3Ato%5D=50000&search%5Bfilter_float_total_area%3Afrom%5D=20&search%5Bfilter_float_total_area%3Ato%5D=40&search%5Border%5D=created_at%3Adesc", timeout=60000)
     time.sleep(random.uniform(5, 8))
     data = []
     while True:
         page.wait_for_selector('[data-cy="l-card"]')
-
-        # Скроллим вниз
-        # for k in range(15):
-        #     page.keyboard.press("PageDown")
-        #     time.sleep(1)
 
         # Получаем карточки и печатаем текст
         cards = page.locator('[data-cy="l-card"]')
@@ -39,16 +32,14 @@ with sync_playwright() as p:
             next_btn.click()
             time.sleep(random.uniform(5,7))
         else: break
-# for item in data:
-    # print(item)
+
 new_data = []
 for star in data:
     price_str = star["price"].replace("$", "").replace(" ", "")
     area_str = star["area"].replace("м²", "").replace(" ", "")
     price_str = int(price_str)
     area_str = float(area_str)
-    if 15000 <= price_str <= 50000 and 23 <= area_str <=45:
-        new_data.append({"price": price_str, "area": area_str})
+    new_data.append({"price": price_str, "area": area_str})
 
 # Удаление повторений с одинаковыми ценами и квадратурой
 unique_data = []
@@ -57,9 +48,7 @@ for item in new_data:
         unique_data.append(item)
 print(unique_data)
 
-
-# Подключаемся к БД (создаст файл, если нет)
-# Подключаемся к БД (создаст файл, если нет)
+# Подключаемся к БД
 conn = sqlite3.connect("data/flats.db")
 cursor = conn.cursor()
 
@@ -106,7 +95,6 @@ if should_write:
 
 
 # Заходим в БД чтобы отобразить разные данные что нам нужны
-
 
 cursor.execute("SELECT price, area FROM flats")
 rows = cursor.fetchall()
@@ -164,7 +152,5 @@ cursor2.execute("""
                VALUES (?, ?, ?, ?, ?)
                """, (average_price, average_area, price_1m, sr_price_30_35, now))
 
-# soup = BeautifulSoup(cod, 'html.parser')
-# cards = soup.find_all("div", {'data-cy': 'l-card'})
 conn2.commit()
 conn2.close()

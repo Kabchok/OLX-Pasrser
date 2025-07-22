@@ -1,9 +1,10 @@
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
-import sqlite3
+import sqlite3, os
 from subprocess import run
-
-TOKEN = '7720418342:AAEmY_B4csTzD5boafVspvOdLba_rbNnJS0'
+from dotenv import load_dotenv
+load_dotenv()
+TOKEN = os.getenv('TOKEN')
 app = ApplicationBuilder().token(TOKEN).build()
 
 
